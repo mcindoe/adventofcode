@@ -26,6 +26,17 @@ def get_calibration_value(text: str) -> int:
     return int(f"{first_digit}{last_digit}")
 
 
+def run_tests():
+    expected_results = {
+        "1abc2": 12,
+        "pqr3stu8vwx": 38,
+        "a1b2c3d4e5f": 15,
+        "treb7uchet": 77,
+    }
+    for text, expected_result in expected_results.items():
+        assert get_calibration_value(text) == expected_result
+
+
 if __name__ == "__main__":
     input_file = Path(__file__).parents[1] / "data/question_1_input.txt"
 
