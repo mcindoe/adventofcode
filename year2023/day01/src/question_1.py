@@ -40,7 +40,7 @@ def run_tests():
 if __name__ == "__main__":
     input_file = Path(__file__).parents[1] / "data.txt"
 
-    with open(input_file, "r") as fp:
+    with open(input_file, "r", encoding="utf-8") as fp:
         sum_of_calibrations = sum(get_calibration_value(text) for text in fp)
 
     print(f"Sum of calibrations: {sum_of_calibrations}")
