@@ -62,35 +62,60 @@ def location_is_part_number(
     return False
 
 
-def get_part_numbers_on_line(schematic: list[str], line_number: int) -> tuple[int]:
+def get_part_number_locations_on_line(
+    schematic: list[str], line_number: int
+) -> tuple[int]:
     number_locations = get_number_locations_in_line(schematic[line_number])
-    schematic_part_numbers = tuple(
-        int(schematic[line_number][number_start:number_end])
+    return tuple(
+        (number_start, number_end)
         for number_start, number_end in number_locations
         if location_is_part_number(schematic, line_number, number_start, number_end)
     )
 
-    return schematic_part_numbers
+
+def get_adjacent_part_numbers(
+    schematic: list[str], line_number: int, char_idx: int
+) -> list[int]:
+    adjacent_part_numbers = []
+
+    for row in range(line_number - 1, line_number + 2):
+        if not 0 <= row < len(schematic):
+            continue
+
+        row_part_number_locations = get_part_number_locations_on_line(schematic, row)
+
+        for number_start, number_end in row_part_number_locations:
+            is_adjacent = char_idx in range(number_start - 1, number_end + 1)
+            if is_adjacent:
+                adjacent_part_numbers.append(
+                    int(schematic[row][number_start:number_end])
+                )
+
+    return adjacent_part_numbers
 
 
-def get_sum_of_schematic_part_numbers(schematic: list[str]) -> int:
-    return sum(
-        sum(get_part_numbers_on_line(schematic, line_number))
-        for line_number in range(len(schematic))
-    )
+def get_sum_of_gear_ratios(schematic: list[str]) -> int:
+    gear_ratio_sum = 0
 
+    for line_idx, line in enumerate(schematic):
+        for char_idx, char in enumerate(line):
+            if char != "*":
+                continue
 
-def run_tests():
-    assert get_number_locations_in_line(EXAMPLE_SCHEMATIC[0]) == [(0, 3), (5, 8)]
-    assert location_is_part_number(EXAMPLE_SCHEMATIC, 0, 0, 3)
-    assert not location_is_part_number(EXAMPLE_SCHEMATIC, 0, 5, 8)
+            adjacent_part_numbers = get_adjacent_part_numbers(
+                schematic, line_idx, char_idx
+            )
+            is_gear = len(adjacent_part_numbers) == 2
+            if is_gear:
+                gear_ratio = adjacent_part_numbers[0] * adjacent_part_numbers[1]
+                gear_ratio_sum += gear_ratio
+
+    return gear_ratio_sum
 
 
 if __name__ == "__main__":
-    run_tests()
-
     with open(YEAR_2023_DIR / "day03/data.txt", "r", encoding="utf-8") as fp:
         question_schematic = fp.readlines()
 
-    print("Example:", get_sum_of_schematic_part_numbers(EXAMPLE_SCHEMATIC))
-    print("Question Answer:", get_sum_of_schematic_part_numbers(question_schematic))
+    print("Example gear ratio:", get_sum_of_gear_ratios(EXAMPLE_SCHEMATIC))
+    print("Question Answer:", get_sum_of_gear_ratios(question_schematic))
